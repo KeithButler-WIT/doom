@@ -26,10 +26,16 @@
   - [[#yas-snippets][Yas Snippets]]
   - [[#direnv-integration][direnv integration]]
   - [[#zoxide-integration][zoxide integration]]
+  - [[#completions][Completions]]
 - [[#org][Org]]
   - [[#cv-settings][CV Settings]]
   - [[#style][Style]]
   - [[#heading-size][Heading Size]]
+  - [[#org-roam][org-roam]]
+  - [[#org-auto-tangle][org-auto-tangle]]
+- [[#languages][Languages]]
+  - [[#org-babel-do-load-languages][Org-babel-do-load-languages]]
+  - [[#design][Design]]
 #+END_QUOTE
 
 * Header Comments
@@ -185,8 +191,11 @@ This code is written to the init.el to select which modules to load. Written her
        (company +childframe); the ultimate code completion backend
        ;;helm              ; the *other* search engine for love and life
        ;;ido               ; the other *other* search engine...
-       (ivy +prescient -childframe
-           -fuzzy +icons)  ; a search engine for love and life
+       (ivy 
+	   +prescient 
+	   -childframe
+       -fuzzy 
+	   +icons)  ; a search engine for love and life
        ;; vertico           ; the search engine of the future
 
        :ui
@@ -202,12 +211,12 @@ This code is written to the init.el to select which modules to load. Written her
        ;;minimap           ; show a map of the code on the side
        modeline          ; snazzy, Atom-inspired modeline, plus API
        nav-flash         ; blink cursor line after big motions
-       ;;neotree           ; a project drawer, like NERDTree for vim
+       neotree           ; a project drawer, like NERDTree for vim
        ophints           ; highlight the region an operation acts on
        (popup +defaults)   ; tame sudden yet inevitable temporary windows
        ;;tabs              ; a tab bar for Emacs
        treemacs          ; a project drawer, like neotree but cooler
-       ;;unicode           ; extended unicode support for various languages
+       unicode           ; extended unicode support for various languages
        vc-gutter         ; vcs diff in the fringe
        vi-tilde-fringe   ; fringe tildes to mark beyond EOB
        window-select     ; visually switch windows
@@ -256,7 +265,9 @@ This code is written to the init.el to select which modules to load. Written her
        (eval +overlay)     ; run code, run (also, repls)
        ;;gist              ; interacting with github gists
        lookup              ; navigate your code and its documentation
-       lsp               ; M-x vscode
+       (lsp
+        +peek
+        )               ; M-x vscode
        magit             ; a git porcelain for Emacs
        make              ; run make tasks from Emacs
        pass              ; password manager for nerds
@@ -293,7 +304,7 @@ This code is written to the init.el to select which modules to load. Written her
        ;;faust             ; dsp, but you get to keep your soul
        ;;fsharp            ; ML stands for Microsoft's Language
        ;;fstar             ; (dependent) types and (monadic) effects and Z3
-       gdscript          ; the language you waited for
+       (gdscript +lsp)          ; the language you waited for
        ;;(go +lsp)         ; the hipster dialect
        ;;(haskell +lsp)    ; a language that's lazier than I am
        ;;hy                ; readability of scheme w/ speed of python
@@ -303,27 +314,28 @@ This code is written to the init.el to select which modules to load. Written her
        ;;(javascript
        ;; +lsp)              ;all(hope(abandon(ye(who(enter(here))))))
        ;;julia             ; a better, faster MATLAB
-       kotlin            ; a better, slicker Java(Script)
+       ;;kotlin            ; a better, slicker Java(Script)
        latex             ; writing papers in Emacs has never been so fun
        ;;lean              ; for folks with too much to prove
        ;;ledger            ; be audit you can be
        (lua +lsp)        ; one-based indices? one-based indices
        markdown          ; writing docs for people to ignore
        ;;nim               ; python + lisp at the speed of c
-       nix               ; I hereby declare "nix geht mehr!"
+       (nix +lsp)               ; I hereby declare "nix geht mehr!"
        ;;ocaml             ; an objective camel
        (org               ; organize your plain life in plain text
         +pretty
-        ;;+roam2
+        +roam2
         +dragndrop
         +ipython
         +pandoc
         +pomodoro
+        +lsp
         +present)
        ;;php               ; perl's insecure younger brother
-       plantuml          ; diagrams for confusing people more
+       plantuml            ; diagrams for confusing people more
        ;;purescript        ; javascript, but functional
-       (python            ; beautiful is better than ugly
+       (python             ; beautiful is better than ugly
         +poetry
         +lsp
         +pyright)
@@ -333,16 +345,16 @@ This code is written to the init.el to select which modules to load. Written her
        ;;rest              ; Emacs as a REST client
        ;;rst               ; ReST in peace
        ;;(ruby +rails)     ; 1.step {|i| p "Ruby is #{i.even? ? 'love' : 'life'}"}
-       rust              ; Fe2O3.unwrap().unwrap().unwrap().unwrap()
+       (rust +lsp)         ; Fe2O3.unwrap().unwrap().unwrap().unwrap()
        ;;scala             ; java, but good
        ;;(scheme +guile)   ; a fully conniving family of lisps
-       (sh +lsp)                ; she sells {ba,z,fi}sh shells on the C xor
+       (sh +lsp)           ; she sells {ba,z,fi}sh shells on the C xor
        ;;sml
        ;;solidity          ; do you need a blockchain? No.
        ;;swift             ; who asked for emoji variables?
        ;;terra             ; Earth and Moon in alignment for performance.
        ;;web               ; the tubes
-       yaml              ; JSON, but readable
+       yaml                ; JSON, but readable
        ;;zig               ; C, but simpler
 
        :email
@@ -502,6 +514,29 @@ Use yas snippets templating package
 (map! :leader :desc "Zoxide travel" :n "z" #'zoxide-travel)
 #+end_src
 
+** Company Completions :noexport:
+#+begin_src  emacs-lisp :results none
+(after! rust-mode
+  (set-company-backend! 'rust-mode 'company-tide 'company-yasnippet))
+
+(after! js2-mode
+  (set-company-backend! 'js2-mode 'company-tide 'company-yasnippet))
+
+(after! sh-script
+  (set-company-backend! 'sh-mode
+    '(company-shell :with company-yasnippet)))
+
+(after! cc-mode
+  (set-company-backend! 'c-mode
+    '(:separate company-irony-c-headers company-irony)))
+#+end_src
+
+** Completions
+#+begin_src  emacs-lisp :results none
+(after! lsp-ui
+  (setq lsp-ui-doc-enable t))
+#+end_src
+
 * Org
 ** CV Settings
 #+begin_src emacs-lisp :results none
@@ -544,6 +579,14 @@ This changes it so it's =blockname ▾=
         org-list-demote-modifier-bullet '(("+" . "-") ("-" . "+"))))
 #+end_src
 
+** COMMENT Pretty Mode
+org-pretty-mode hides ** // == characters when not hovering over works they surround.
+
+Automatically starts org-pretty-mode alongside org-mode
+#+begin_src  emacs-lisp :results none
+(add-hook! 'org-mode-hook
+           #'+org-pretty-mode)
+#+end_src
 ** Heading Size
 Use different font sizes for headlines and define sections for a fixed-pitch font.
 #+begin_src  emacs-lisp :results none
@@ -566,4 +609,316 @@ Use different font sizes for headlines and define sections for a fixed-pitch fon
     '(org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
     '(org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
     '(org-checkbox nil :inherit 'fixed-pitch)))
+#+end_src
+
+** org-roam
+Org-roam-ui tries to keep up with the latest features of org-roam, which conflicts with Doom Emacs's desire for stability.
+To make sure nothing breaks, use the latest version of org-roam by unpinning it.
+
+#+begin_src  emacs-lisp :results none :tangle packages.el
+(unpin! org-roam)
+(package! org-roam-ui)
+#+end_src
+
+#+begin_src  emacs-lisp :results none
+(use-package org-roam
+  :straight t
+  :ensure t
+  :demand t  ;; Ensure org-roam is loaded by default
+  :init
+  (setq org-roam-v2-ack t)
+  :custom
+  (org-roam-directory "~/workspace/org/roam")
+  (org-roam-completion-everywhere t)
+  :bind (("C-c n l" . org-roam-buffer-toggle)
+         ("C-c n f" . org-roam-node-find)
+         ("C-c n i" . org-roam-node-insert)
+         :map org-mode-map
+         ("C-M-i" . completion-at-point)
+         :map org-roam-dailies-map
+         ("Y" . org-roam-dailies-capture-yesterday)
+         ("T" . org-roam-dailies-capture-tomorrow))
+  :bind-keymap
+  ("C-c n d" . org-roam-dailies-map)
+  :config
+  (require 'org-roam-dailies) ;; Ensure the keymap is available
+  (org-roam-db-autosync-mode))
+#+end_src
+
+The buffer you put this code in must have lexical-binding set to t!
+See the final configuration at the end for more details.
+
+*** Fast note insertion for a smoother writing flow
+Sometimes while writing, you'll want to create a new node in your Org Roam notes without interrupting your writing flow! Typically you would use =org-roam-node-insert=, but when you create a new note with this command, it will open the new note after it gets created.
+
+We can define a function that enables you to create a new note and insert a link in the current document without opening the new note's buffer.
+
+This will allow you to quickly create new notes for topics you're mentioning while writing so that you can go back later and fill those notes in with more details!
+#+begin_src  emacs-lisp :results none
+;; Bind this to C-c n I
+(defun org-roam-node-insert-immediate (arg &rest args)
+  (interactive "P")
+  (let ((args (cons arg args))
+        (org-roam-capture-templates (list (append (car org-roam-capture-templates)
+                                                  '(:immediate-finish t)))))
+    (apply #'org-roam-node-insert args)))
+#+end_src
+This function takes the first capture template in =org-roam-capture-templates= (usually the "default" template) and adds the =:immediate-finish t= [[https://orgmode.org/manual/Template-elements.html#Template-elements][capture property]] to prevent the note buffer from being loaded once capture finishes:
+
+Thanks to [[https://www.youtube.com/watch?v=AyhPmypHDEw&lc=Ugw7bYrPOc6oy_UBmPZ4AaABAg][Umar Ahmad]] for the snippet!
+
+*** Build your Org agenda from Org Roam Notes
+One of the most useful features of Org Mode is the agenda view. You can actually use your Org Roam notes as the source for this view!
+
+Typically you won't want to pull in *all* of your Org Roam notes, so we'll only use the notes with a specific tag like =Project=.
+
+Here is a snippet that will find all the notes with a specific tag and then set your =org-agenda-list= with the corresponding note files.
+#+begin_src  emacs-lisp :results none
+(defun my/org-roam-filter-by-tag (tag-name)
+  (lambda (node)
+    (member tag-name (org-roam-node-tags node))))
+
+(defun my/org-roam-list-notes-by-tag (tag-name)
+  (mapcar #'org-roam-node-file
+          (seq-filter
+           (my/org-roam-filter-by-tag tag-name)
+           (org-roam-node-list))))
+
+(defun my/org-roam-refresh-agenda-list ()
+  (interactive)
+  (setq org-agenda-files (my/org-roam-list-notes-by-tag "Project")))
+
+;; Build the agenda list the first time for the session
+(my/org-roam-refresh-agenda-list)
+#+end_src
+Check out the Org agenda now by running =M-x org-agenda= and press a to see the daily schedule or =d= for the list of all =TODOs= in your project files.
+
+For best results, make sure to add the desired tag to new note files as part of your capture template (=Project= in this case). Just remember to call =my/org-roam-refresh-agenda-list= to refresh the list after creating a new note with that tag!
+
+*NOTE:* I couldn't find a reliable, efficient way to pull dailies into the agenda yet! As soon as I do, I might make another video on it.
+
+**** TIP: Improving the appearance of notes in the agenda view
+You may notice that the agenda lines that come from your Org Roam files look a little unattractive due to the timestamped file names. We can fix this by adding a category to the header lines of one of our project files like so:
+#+begin_example
+#+title: Mesche
+#+category: Mesche
+#+filetags: Project
+#+end_example
+
+Typically you will want to have the category contain the same name as the note so we can update our Project template from =Org Roam Episode 2= to include it automatically:
+#+begin_src  emacs-lisp :results none
+;; ("p" "project" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Add initial tasks\n\n* Dates\n\n"
+;;  :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+category: ${title}\n#+filetags: Project")
+;;  :unnarrowed t)
+#+end_src
+
+*** Selecting from a list of notes with a specific tag
+The org-roam-node-find function gives us the ability to filter the list of notes that get displayed for selection.
+
+We can define our own function that shows a selection list for notes that have a specific tag like Project which we talked about before. This can be useful to set up a keybinding to quickly select from a specific set of notes!
+
+One added benefit is that we can override the set of capture templates that get used when a new note gets created.
+
+This means that we can automatically create a new note with our project capture template if the note doesn't already exist!
+#+begin_src  emacs-lisp :results none
+(defun my/org-roam-project-finalize-hook ()
+  "Adds the captured project file to `org-agenda-files' if the
+capture was not aborted."
+  ;; Remove the hook since it was added temporarily
+  (remove-hook 'org-capture-after-finalize-hook #'my/org-roam-project-finalize-hook)
+
+  ;; Add project file to the agenda list if the capture was confirmed
+  (unless org-note-abort
+    (with-current-buffer (org-capture-get :buffer)
+      (add-to-list 'org-agenda-files (buffer-file-name)))))
+
+(defun my/org-roam-find-project ()
+  (interactive)
+  ;; Add the project file to the agenda after capture is finished
+  (add-hook 'org-capture-after-finalize-hook #'my/org-roam-project-finalize-hook)
+
+  ;; Select a project file to open, creating it if necessary
+  (org-roam-node-find
+   nil
+   nil
+   (my/org-roam-filter-by-tag "Project")
+   :templates
+   '(("p" "project" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Add initial tasks\n\n* Dates\n\n"
+      :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+category: ${title}\n#+filetags: Project")
+      :unnarrowed t))))
+
+(global-set-key (kbd "C-c n p") #'my/org-roam-find-project)
+#+end_src
+One useful aspect of this snippet is that the =org-capture-after-finalize-hook= allows us to ensure a new project note is automatically added to the Org agenda by calling the =my/org-roam-project-finalize-hook= function we defined earlier!
+
+*** Streamlined custom capture for tasks and notes
+Org Roam provides a low-level function called =org-roam-capture-= (yes, the hyphen is there!) which allows you to invoke note capture functionality in a very flexible way. More information can be found in the Org Roam manual: [[https://www.orgroam.com/manual.html#Extending-the-Capture-System][Extending the Capture System]].
+
+We can use this function to optimize specific parts of our capture workflow!
+
+Here are a couple of ways you might use it:
+
+**** Keep an inbox of notes and tasks
+If you want to quickly capture new notes and tasks with a single keybinding into a place that you can review later, we can use =org-roam-capture-= to capture to a single-specific file like =Inbox.org=!
+
+Even though this file won't have the timestamped filename, it will still be treated as a node in your Org Roam notes.
+
+#+begin_src  emacs-lisp :results none
+(defun my/org-roam-capture-inbox ()
+  (interactive)
+  (org-roam-capture- :node (org-roam-node-create)
+                     :templates '(("i" "inbox" plain "* %?"
+                                  :if-new (file+head "Inbox.org" "Inbox\n")))))
+
+(global-set-key (kbd "C-c n b") #'my/org-roam-capture-inbox)
+#+end_src
+
+**** Capture a task directly into a specific project
+If you've set up project note files like we mentioned earlier, you can set up a capture template that allows you to quickly capture tasks for any project.
+
+Much like the example before, we can either select a project that exists or automatically create a project note when it doesn't exist yet!
+
+#+begin_src  emacs-lisp :results none
+(defun my/org-roam-capture-task ()
+  (interactive)
+  ;; Add the project file to the agenda after capture is finished
+  (add-hook 'org-capture-after-finalize-hook #'my/org-roam-project-finalize-hook)
+
+  ;; Capture the new task, creating the project file if necessary
+  (org-roam-capture- :node (org-roam-node-read
+                            nil
+                            (my/org-roam-filter-by-tag "Project"))
+                     :templates '(("p" "project" plain "* TODO %?"
+                                   :if-new (file+head+olp "%<%Y%m%d%H%M%S>-${slug}.org"
+                                                          "${title}\n#+category: ${title}\n#+filetags: Project"
+                                                          ("Tasks"))))))
+
+(global-set-key (kbd "C-c n t") #'my/org-roam-capture-task)
+#+end_src
+
+One important thing to point out here is that we're using =file+head+olp= in the capture template so that we can drop the new task entry under the "Tasks" heading.
+
+We're also using the =my/org-roam-project-finalize-hook= function we defined earlier so that any new project gets added to the Org agenda!
+*** Automatically copy (or move) completed tasks to dailies
+One interesting use for daily files is to keep a log of tasks that were completed on that particular day. What if we could automatically copy completed tasks in *any* Org Mode file to today's daily file?
+
+We can do this by adding some custom code!
+
+The following snippet sets up a hook for all Org task state changes and then copies the completed (DONE) entry to today's note file:
+#+begin_src  emacs-lisp :results none
+(defun my/org-roam-copy-todo-to-today ()
+  (interactive)
+  (let ((org-refile-keep t) ;; Set this to nil to delete the original!
+        (org-roam-dailies-capture-templates
+          '(("t" "tasks" entry "%?"
+             :if-new (file+head+olp "%<%Y-%m-%d>.org" "#+title: %<%Y-%m-%d>\n" ("Tasks")))))
+        (org-after-refile-insert-hook #'save-buffer)
+        today-file
+        pos)
+    (save-window-excursion
+      (org-roam-dailies--capture (current-time) t)
+      (setq today-file (buffer-file-name))
+      (setq pos (point)))
+
+    ;; Only refile if the target file is different than the current file
+    (unless (equal (file-truename today-file)
+                   (file-truename (buffer-file-name)))
+      (org-refile nil nil (list "Tasks" today-file nil pos)))))
+
+(add-to-list 'org-after-todo-state-change-hook
+             (lambda ()
+               (when (equal org-state "DONE")
+                 (my/org-roam-copy-todo-to-today))))
+#+end_src
+If you want to move the completed task instead, set =org-refile-keep= in this code to =nil=!
+
+This code is a little more advanced, so consult the next section to learn more about how it works!
+
+**** How it works
+To be notified on changes to =TODO= item states, we add the =my/org-roam-copy-todo-to-today= function to the =org-after-todo-state-change-hook= list.
+
+When the user completes a task, this function will set up a "daily" temporary capture template which will jump to a heading called "Tasks" in the file for today's date. This is wrapped in a =save-window-excursion= call to ensure that the capture job won't change your window configuration and current buffer.
+
+If the file being captured to is not the file for the current date, we call =org-refile= to copy (or move if =org-refile-keep= is =nil=) the item to the new location! This avoids moving a completed task back into the file it already lives in (this will raise an error!)
+
+*** org-roam-ui
+Here's a very basic sample configuration of =org-roam= using =use-package=:
+Obtained from the [[https://github.com/org-roam/org-roam][org-roam]] github.
+#+begin_src  emacs-lisp :results none
+(use-package! websocket
+    :after org-roam)
+
+(use-package! org-roam-ui
+    :after org-roam ;; or :after org
+;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
+;;         a hookable mode anymore, you're advised to pick something yourself
+;;         if you don't care about startup time, use
+    ;; :hook (after-init . org-roam-ui-mode)
+    :custom
+    (org-roam-directory "~/workspace/org/roam/")
+    (org-roam-dailies-capture-templates
+      '(("d" "default" entry "* %<%I:%M %p>: %?"
+         :if-new (file+head "%<%Y-%m-%d>.org" "#+title: %<%Y-%m-%d>\n"))))
+    :config
+    (setq org-roam-ui-sync-theme t
+          org-roam-ui-follow t
+          org-roam-ui-update-on-save t
+          org-roam-ui-open-on-start t))
+
+#+end_src
+
+** org-auto-tangle
+#+begin_src  emacs-lisp :results none :tangle packages.el
+(package! org-auto-tangle)
+#+end_src
+
+#+begin_src  emacs-lisp :results none
+(use-package org-auto-tangle
+  :load-path "site-lisp/org-auto-tangle/"    ;; this line is necessary only if you cloned the repo in your site-lisp directory
+  :defer t
+  :hook (org-mode . org-auto-tangle-mode))
+#+end_src
+
+
+** COMMENT org-appear
+Use [[https://github.com/awth13/org-appear][org-appear]] to reveal emphasis markers when moving the cursor over them.
+#+begin_src  emacs-lisp :results none :tangle packages.el
+(package! org-appear
+  :recipe (:host github
+           :repo "awth13/org-appear"))
+#+end_src
+
+#+begin_src  emacs-lisp :results none
+(add-hook! org-mode :append #'org-appear-mode)
+#+end_src
+
+* Languages
+** Org-babel-do-load-languages
+#+begin_src emacs-lisp
+;; active Babel languages
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((mermaid . t)
+   (scheme . t)
+   (emacs-lisp . t)
+   (python . t)
+   (Kotlin . t)
+   (bash . t)
+   (sql . t)
+   (rust . t)
+   (plantuml. t)
+   ))
+#+end_src
+
+** Design
+*** ob-mermaid
+[[https://github.com/arnm/ob-mermaid][GitHub - arnm/ob-mermaid: Generate mermaid diagrams within Emacs org-mode babel]]
+#+begin_src  emacs-lisp :results none :tangle packages.el
+(package! ob-mermaid)
+#+end_src
+
+*** Plantuml
+#+begin_src emacs-lisp
+(add-to-list 'org-src-lang-modes '("plantuml" . plantuml))
+(org-babel-do-load-languages 'org-babel-load-languages '((plantuml . t)))
 #+end_src
