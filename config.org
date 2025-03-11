@@ -538,6 +538,10 @@ Use yas snippets templating package
 #+end_src
 
 * Org
+#+begin_src emacs-lisp :results none
+(setq org-directory "~/workspace/org/")
+#+end_src
+
 ** CV Settings
 #+begin_src emacs-lisp :results none
 (after! org
@@ -622,7 +626,6 @@ To make sure nothing breaks, use the latest version of org-roam by unpinning it.
 
 #+begin_src  emacs-lisp :results none
 (use-package org-roam
-  :straight t
   :ensure t
   :demand t  ;; Ensure org-roam is loaded by default
   :init
@@ -902,7 +905,7 @@ Use [[https://github.com/awth13/org-appear][org-appear]] to reveal emphasis mark
    (scheme . t)
    (emacs-lisp . t)
    (python . t)
-   (Kotlin . t)
+   ;;(Kotlin . t)
    (bash . t)
    (sql . t)
    (rust . t)
